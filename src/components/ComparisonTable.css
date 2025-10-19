@@ -1,0 +1,68 @@
+.comparison-table-container {
+  width: 100%;
+  padding: 0.75rem 2rem;
+  background-color: #242424;
+}
+
+.comparison-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+  text-align: left;
+  border-bottom: 2px solid #333;
+  padding-bottom: 0.4rem;
+}
+
+.comparison-table-wrapper {
+  overflow-x: auto;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.comparison-table th {
+  background-color: #2a2a2a;
+  color: #646cff;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #444;
+}
+
+.comparison-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #333;
+  color: #ddd;
+}
+
+.comparison-table .weapon-name-cell {
+  font-weight: 600;
+  color: #fff;
+}
+
+.comparison-table tbody tr:hover {
+  background-color: #2a2a2a;
+}
+
+.comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .comparison-table-container {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .comparison-title {
+    font-size: 1.75rem;
+  }
+
+  .comparison-table th,
+  .comparison-table td {
+    padding: 0.5rem 0.75rem;
+    font-size: 1.05rem;
+  }
+}

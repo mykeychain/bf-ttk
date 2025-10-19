@@ -17,6 +17,35 @@
   font-size: 1.1rem;
 }
 
+.clear-selection-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  background-color: #2a2a2a;
+  color: #646cff;
+  border: 2px solid #444;
+  border-radius: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.clear-selection-button:hover:not(:disabled) {
+  background-color: #646cff;
+  color: #fff;
+  border-color: #646cff;
+}
+
+.clear-selection-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: #666;
+  border-color: #333;
+}
+
 .weapon-category {
   margin-bottom: 2.5rem;
 }

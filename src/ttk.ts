@@ -87,8 +87,8 @@ export interface EvaluateArgs extends SimulateDuelArgs {
 }
 
 export interface EvalResult {
+  TTK: number;            // Theoretical TTK with 100% hit rate (s)
   ETTK: number;           // Expected TTK (s)
-  TTK90: number;          // 90th percentile TTK (s)
   "Kill@W": number;       // Probability of kill within kill_window
   "AUC@W": number;        // Area-under-curve of win prob / window
   avgShots: number;       // Average shots taken (across successful kills)
@@ -276,11 +276,15 @@ export function simulate_duel_minimal(args: SimulateDuelArgs): DuelResult | unde
 
 // ---------- batch evaluation ----------
 export function evaluate_weapon_minimal(args: EvaluateArgs): EvalResult {
-  const { trials = 100, kill_window = 1.0, RPM } = args;
+  const { trials = 100, kill_window = 1.0, RPM, HP = 100, damage_per_hit } = args;
 
   const r = RPM / 60.0;
   const dt = 1.0 / r;
   const steps = Math.max(1, Math.ceil(kill_window / dt));
+
+  // Calculate theoretical TTK with 100% hit rate
+  const H = Math.ceil(HP / damage_per_hit);
+  const theoreticalTTK = (H - 1) * dt; // First shot at t=0
 
   const ttkSamples: number[] = [];
   const cumWins = new Array<number>(steps + 1).fill(0);
@@ -305,8 +309,8 @@ export function evaluate_weapon_minimal(args: EvaluateArgs): EvalResult {
 
   if (ttkSamples.length === 0) {
     return {
+      TTK: theoreticalTTK,
       ETTK: Infinity,
-      TTK90: Infinity,
       "Kill@W": 0.0,
       "AUC@W": 0.0,
       avgShots: 0,
@@ -319,8 +323,6 @@ export function evaluate_weapon_minimal(args: EvaluateArgs): EvalResult {
   ttkSamples.sort((a, b) => a - b);
   const mean =
     ttkSamples.reduce((acc, x) => acc + x, 0) / ttkSamples.length;
-  const pIdx = Math.floor(0.9 * (ttkSamples.length - 1));
-  const ttk90 = ttkSamples[pIdx];
   const killW = cumWins[steps] / trials;
 
   // trapezoid rule on the coarse shot-time grid
@@ -339,8 +341,8 @@ export function evaluate_weapon_minimal(args: EvaluateArgs): EvalResult {
   const accuracy = avgShots > 0 ? avgHits / avgShots : 0;
 
   return {
+    TTK: theoreticalTTK,
     ETTK: mean,
-    TTK90: ttk90,
     "Kill@W": killW,
     "AUC@W": aucW,
     avgShots,

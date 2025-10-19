@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { WeaponSelector } from './components/WeaponSelector'
-import { ResultsDisplay } from './components/ResultsDisplay'
+import { ResultsPanel } from './components/ResultsPanel'
 import type { WeaponDatabase, WeaponWithName } from './types'
 import './App.css'
 
 function App() {
   const [weapons, setWeapons] = useState<WeaponWithName[]>([])
-  const [selectedWeaponName, setSelectedWeaponName] = useState<string | null>(null)
+  const [selectedWeaponNames, setSelectedWeaponNames] = useState<string[]>([])
   const [playerSkill, setPlayerSkill] = useState(0.1) // sigma_player_deg
 
   useEffect(() => {
@@ -23,21 +23,38 @@ function App() {
       .catch((err) => console.error('Failed to load weapons:', err))
   }, [])
 
-  const selectedWeapon = weapons.find(w => w.name === selectedWeaponName)
+  // Toggle weapon selection (add if not selected, remove if already selected)
+  const toggleWeaponSelection = (weaponName: string) => {
+    setSelectedWeaponNames(prev =>
+      prev.includes(weaponName)
+        ? prev.filter(name => name !== weaponName)
+        : [...prev, weaponName]
+    )
+  }
+
+  // Clear all selected weapons
+  const clearSelection = () => {
+    setSelectedWeaponNames([])
+  }
+
+  const selectedWeapons = selectedWeaponNames
+    .map(name => weapons.find(w => w.name === name))
+    .filter((weapon): weapon is WeaponWithName => weapon !== undefined)
 
   return (
     <div className="app">
       <div className="app-left">
         <WeaponSelector
           weapons={weapons}
-          selectedWeapon={selectedWeaponName}
-          onSelectWeapon={setSelectedWeaponName}
+          selectedWeapons={selectedWeaponNames}
+          onSelectWeapon={toggleWeaponSelection}
+          onClearSelection={clearSelection}
           playerSkill={playerSkill}
           onSkillChange={setPlayerSkill}
         />
       </div>
       <div className="app-right">
-        {selectedWeapon && <ResultsDisplay weapon={selectedWeapon} playerSkill={playerSkill} />}
+        <ResultsPanel selectedWeapons={selectedWeapons} playerSkill={playerSkill} />
       </div>
     </div>
   )

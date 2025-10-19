@@ -5,13 +5,14 @@ import './WeaponSelector.css';
 
 interface WeaponSelectorProps {
   weapons: WeaponWithName[];
-  selectedWeapon: string | null;
+  selectedWeapons: string[];
   onSelectWeapon: (weaponName: string) => void;
+  onClearSelection: () => void;
   playerSkill: number;
   onSkillChange: (skill: number) => void;
 }
 
-export function WeaponSelector({ weapons, selectedWeapon, onSelectWeapon, playerSkill, onSkillChange }: WeaponSelectorProps) {
+export function WeaponSelector({ weapons, selectedWeapons, onSelectWeapon, onClearSelection, playerSkill, onSkillChange }: WeaponSelectorProps) {
 
   // Group weapons by category
   const weaponsByCategory = weapons.reduce((acc, weapon) => {
@@ -31,6 +32,14 @@ export function WeaponSelector({ weapons, selectedWeapon, onSelectWeapon, player
 
       <SkillSlider value={playerSkill} onChange={onSkillChange} />
 
+      <button
+        className="clear-selection-button"
+        onClick={onClearSelection}
+        disabled={selectedWeapons.length === 0}
+      >
+        CLEAR SELECTION
+      </button>
+
       {categoryOrder.map((category) => {
         const categoryWeapons = weaponsByCategory[category];
         if (!categoryWeapons || categoryWeapons.length === 0) return null;
@@ -45,7 +54,7 @@ export function WeaponSelector({ weapons, selectedWeapon, onSelectWeapon, player
                 <WeaponCard
                   key={weapon.name}
                   name={weapon.name}
-                  selected={selectedWeapon === weapon.name}
+                  selected={selectedWeapons.includes(weapon.name)}
                   onClick={() => onSelectWeapon(weapon.name)}
                 />
               ))}

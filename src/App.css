@@ -21,6 +21,11 @@
   background-color: #242424;
 }
 
+.results-container {
+  display: flex;
+  flex-direction: column;
+}
+
 @media (max-width: 1024px) {
   .app {
     grid-template-columns: 1fr;
