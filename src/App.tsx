@@ -1,34 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
+import { WeaponSelector } from './components/WeaponSelector'
+import { ResultsDisplay } from './components/ResultsDisplay'
+import type { WeaponDatabase, WeaponWithName } from './types'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [weapons, setWeapons] = useState<WeaponWithName[]>([])
+  const [selectedWeaponName, setSelectedWeaponName] = useState<string | null>(null)
+  const [playerSkill, setPlayerSkill] = useState(0.1) // sigma_player_deg
+
+  useEffect(() => {
+    // Load weapons from JSON
+    fetch('/weapons.json')
+      .then((res) => res.json())
+      .then((data: WeaponDatabase) => {
+        const weaponArray: WeaponWithName[] = Object.entries(data).map(([name, weapon]) => ({
+          name,
+          ...weapon,
+        }))
+        setWeapons(weaponArray)
+      })
+      .catch((err) => console.error('Failed to load weapons:', err))
+  }, [])
+
+  const selectedWeapon = weapons.find(w => w.name === selectedWeaponName)
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app">
+      <div className="app-left">
+        <WeaponSelector
+          weapons={weapons}
+          selectedWeapon={selectedWeaponName}
+          onSelectWeapon={setSelectedWeaponName}
+          playerSkill={playerSkill}
+          onSkillChange={setPlayerSkill}
+        />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div className="app-right">
+        {selectedWeapon && <ResultsDisplay weapon={selectedWeapon} playerSkill={playerSkill} />}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   )
 }
 

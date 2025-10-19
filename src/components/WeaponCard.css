@@ -1,0 +1,26 @@
+.weapon-card {
+  padding: 1rem 1.25rem;
+  border: 2px solid #444;
+  border-radius: 0;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.weapon-card:hover {
+  border-color: #646cff;
+  background-color: #242424;
+}
+
+.weapon-card.selected {
+  border-color: #646cff;
+  background-color: #2a2a4a;
+  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+}
+
+.weapon-name {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #fff;
+}

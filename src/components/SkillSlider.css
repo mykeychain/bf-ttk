@@ -1,0 +1,119 @@
+.skill-slider-wrapper {
+  margin-bottom: 2rem;
+  margin-top: 1.5rem;
+}
+
+.skill-slider-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  text-align: left;
+}
+
+.skill-slider {
+  padding: 1rem;
+  background-color: #1a1a1a;
+  border-radius: 0;
+  border: 1px solid #333;
+  position: relative;
+}
+
+.skill-slider-labels {
+  position: relative;
+  height: 1.5rem; /* line-height * font-size = 1.5 * 1rem */
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.skill-label {
+  position: absolute;
+  white-space: nowrap;
+}
+
+.skill-label:nth-child(1) {
+  left: 0%;
+}
+
+.skill-label:nth-child(2) {
+  left: 33.33%;
+  transform: translateX(-50%);
+}
+
+.skill-label:nth-child(3) {
+  left: 66.67%;
+  transform: translateX(-50%);
+}
+
+.skill-label:nth-child(4) {
+  left: 100%;
+  transform: translateX(-100%);
+}
+
+.skill-label-casual {
+  color: #29b6f6;
+}
+
+.skill-label-average {
+  color: #ab47bc;
+}
+
+.skill-label-advanced {
+  color: #8e24aa;
+}
+
+.skill-label-pro {
+  color: #7b1fa2;
+}
+
+.skill-slider-input {
+  width: 100%;
+  height: 6px;
+  border-radius: 0;
+  background: linear-gradient(to right, #29b6f6 0%, #9c27b0 50%, #7b1fa2 100%);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.skill-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #646cff;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.skill-slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.skill-slider-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #646cff;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.skill-slider-input::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+.skill-slider-value {
+  text-align: center;
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  color: #888;
+}
