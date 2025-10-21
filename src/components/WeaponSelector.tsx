@@ -71,6 +71,18 @@ export function WeaponSelector({ weapons, selectedWeapons, onSelectWeapon, onCle
           </div>
         );
       })}
+
+      <footer className="weapon-selector-footer">
+        <p className="disclaimer-text">This is a fan-made project and is not affiliated with DICE or EA</p>
+        <a
+          href="https://github.com/mykeychain/bf-ttk"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="github-link"
+        >
+          View on GitHub
+        </a>
+      </footer>
     </div>
   );
 }
