@@ -41,6 +41,21 @@ export function DamageTable({ weapons }: DamageTableProps) {
     return null;
   }
 
+  // Calculate max damage for each distance column
+  const maxDamageByDistance = new Map<number, number>();
+  allDistances.forEach(distance => {
+    let maxDamage = -Infinity;
+    weaponDamages.forEach(({ damageByDistance }) => {
+      const damage = damageByDistance.get(distance);
+      if (damage !== undefined && damage > maxDamage) {
+        maxDamage = damage;
+      }
+    });
+    if (maxDamage !== -Infinity) {
+      maxDamageByDistance.set(distance, maxDamage);
+    }
+  });
+
   return (
     <div className="comparison-table-container">
       <h2 className="comparison-title">DAMAGE COMPARISON</h2>
@@ -60,8 +75,10 @@ export function DamageTable({ weapons }: DamageTableProps) {
                 <td className="weapon-name-cell">{weaponName}</td>
                 {allDistances.map(distance => {
                   const damage = damageByDistance.get(distance);
+                  const maxDamage = maxDamageByDistance.get(distance);
+                  const isHighlighted = damage !== undefined && damage === maxDamage;
                   return (
-                    <td key={distance}>
+                    <td key={distance} className={isHighlighted ? 'highlight-best' : ''}>
                       {damage !== undefined ? damage : '—'}
                     </td>
                   );

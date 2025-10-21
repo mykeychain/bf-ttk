@@ -43,6 +43,21 @@ export function ComparisonTable({ weaponResults, metric }: ComparisonTableProps)
     return null;
   }
 
+  // Calculate min TTK/ETTK for each distance column (lower is better)
+  const minValueByDistance = new Map<number, number>();
+  allDistances.forEach(distance => {
+    let minValue = Infinity;
+    weaponMetrics.forEach(({ valuesByDistance }) => {
+      const value = valuesByDistance.get(distance);
+      if (value !== undefined && value < minValue) {
+        minValue = value;
+      }
+    });
+    if (minValue !== Infinity) {
+      minValueByDistance.set(distance, minValue);
+    }
+  });
+
   return (
     <div className="comparison-table-container">
       <h2 className="comparison-title">
@@ -65,8 +80,10 @@ export function ComparisonTable({ weaponResults, metric }: ComparisonTableProps)
                 {allDistances.map(distance => {
                   const value = valuesByDistance.get(distance);
                   const accuracy = accuracyByDistance.get(distance);
+                  const minValue = minValueByDistance.get(distance);
+                  const isHighlighted = value !== undefined && value === minValue;
                   return (
-                    <td key={distance}>
+                    <td key={distance} className={isHighlighted ? 'highlight-best' : ''}>
                       {value !== undefined
                         ? metric === 'ETTK' && accuracy !== undefined
                           ? `${value.toFixed(3)}s (${(accuracy * 100).toFixed(1)}%)`

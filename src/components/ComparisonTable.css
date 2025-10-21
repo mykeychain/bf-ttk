@@ -51,6 +51,14 @@
   border-bottom: none;
 }
 
+.comparison-table .highlight-best {
+  background-color: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  color: #FFD54F;
+  font-weight: 700;
+  box-shadow: 0 0 8px rgba(255, 193, 7, 0.2);
+}
+
 @media (max-width: 768px) {
   .comparison-table-container {
     padding: 0.75rem 1.5rem;
