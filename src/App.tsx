@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { WeaponSelector } from './components/WeaponSelector'
 import { ResultsPanel } from './components/ResultsPanel'
+import { WelcomeModal } from './components/WelcomeModal'
 import type { WeaponDatabase, WeaponWithName } from './types'
 import './App.css'
 
@@ -8,6 +9,15 @@ function App() {
   const [weapons, setWeapons] = useState<WeaponWithName[]>([])
   const [selectedWeaponNames, setSelectedWeaponNames] = useState<string[]>([])
   const [playerSkill, setPlayerSkill] = useState(0.1) // sigma_player_deg
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
+
+  // Check if user has seen the welcome modal
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('ettk-welcome-seen')
+    if (!hasSeenWelcome) {
+      setShowWelcomeModal(true)
+    }
+  }, [])
 
   useEffect(() => {
     // Load weapons from JSON
@@ -37,26 +47,36 @@ function App() {
     setSelectedWeaponNames([])
   }
 
+  // Close welcome modal and mark as seen
+  const handleCloseWelcomeModal = () => {
+    localStorage.setItem('ettk-welcome-seen', 'true')
+    setShowWelcomeModal(false)
+  }
+
   const selectedWeapons = selectedWeaponNames
     .map(name => weapons.find(w => w.name === name))
     .filter((weapon): weapon is WeaponWithName => weapon !== undefined)
 
   return (
-    <div className="app">
-      <div className="app-left">
-        <WeaponSelector
-          weapons={weapons}
-          selectedWeapons={selectedWeaponNames}
-          onSelectWeapon={toggleWeaponSelection}
-          onClearSelection={clearSelection}
-          playerSkill={playerSkill}
-          onSkillChange={setPlayerSkill}
-        />
+    <>
+      <WelcomeModal isOpen={showWelcomeModal} onClose={handleCloseWelcomeModal} />
+      <div className="app">
+        <div className="app-left">
+          <WeaponSelector
+            weapons={weapons}
+            selectedWeapons={selectedWeaponNames}
+            onSelectWeapon={toggleWeaponSelection}
+            onClearSelection={clearSelection}
+            playerSkill={playerSkill}
+            onSkillChange={setPlayerSkill}
+            onOpenHelp={() => setShowWelcomeModal(true)}
+          />
+        </div>
+        <div className="app-right">
+          <ResultsPanel selectedWeapons={selectedWeapons} playerSkill={playerSkill} />
+        </div>
       </div>
-      <div className="app-right">
-        <ResultsPanel selectedWeapons={selectedWeapons} playerSkill={playerSkill} />
-      </div>
-    </div>
+    </>
   )
 }
 

@@ -9,14 +9,14 @@
 }
 
 .weapon-card:hover {
-  border-color: #646cff;
+  border-color: #FF2C10;
   background-color: #242424;
 }
 
 .weapon-card.selected {
-  border-color: #646cff;
-  background-color: #2a2a4a;
-  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+  border-color: #FF2C10;
+  background-color: #3a2418;
+  box-shadow: 0 0 10px rgba(255, 44, 16, 0.3);
 }
 
 .weapon-name {

@@ -37,7 +37,7 @@ export function ResultsDisplay({ weaponResult }: ResultsDisplayProps) {
           <thead>
             <tr>
               <th>DISTANCE</th>
-              <th>DAMAGE</th>
+              <th>DMG</th>
               <th>TTK</th>
               <th>ETTK</th>
               <th>AVG SHOTS</th>

@@ -10,9 +10,10 @@ interface WeaponSelectorProps {
   onClearSelection: () => void;
   playerSkill: number;
   onSkillChange: (skill: number) => void;
+  onOpenHelp: () => void;
 }
 
-export function WeaponSelector({ weapons, selectedWeapons, onSelectWeapon, onClearSelection, playerSkill, onSkillChange }: WeaponSelectorProps) {
+export function WeaponSelector({ weapons, selectedWeapons, onSelectWeapon, onClearSelection, playerSkill, onSkillChange, onOpenHelp }: WeaponSelectorProps) {
 
   // Group weapons by category
   const weaponsByCategory = weapons.reduce((acc, weapon) => {
@@ -28,7 +29,15 @@ export function WeaponSelector({ weapons, selectedWeapons, onSelectWeapon, onCle
 
   return (
     <div className="weapon-selector">
-      <h1>Battlefield TTK Calculator</h1>
+      <div className="header-row">
+        <h1>Battlefield TTK Calculator</h1>
+        <button className="help-button" onClick={onOpenHelp} aria-label="Help">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="13" stroke="currentColor" strokeWidth="2"/>
+            <text x="14" y="19" fontSize="16" fontWeight="700" fill="currentColor" textAnchor="middle">?</text>
+          </svg>
+        </button>
+      </div>
 
       <SkillSlider value={playerSkill} onChange={onSkillChange} />
 

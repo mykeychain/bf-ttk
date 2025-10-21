@@ -3,11 +3,39 @@
   padding: 1.5rem;
 }
 
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .weapon-selector h1 {
   font-size: 2rem;
-  margin-bottom: 0.5rem;
+  margin: 0;
   text-align: left;
   color: #fff;
+}
+
+.help-button {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.help-button:hover {
+  color: #FF2C10;
+  transform: scale(1.1);
+}
+
+.help-button svg {
+  display: block;
 }
 
 .subtitle {
@@ -22,7 +50,7 @@
   padding: 0.75rem 1rem;
   margin: 0;
   background-color: #2a2a2a;
-  color: #646cff;
+  color: #FF2C10;
   border: 2px solid #444;
   border-radius: 0;
   font-family: 'Rajdhani', sans-serif;
@@ -34,9 +62,9 @@
 }
 
 .clear-selection-button:hover:not(:disabled) {
-  background-color: #646cff;
+  background-color: #FF2C10;
   color: #fff;
-  border-color: #646cff;
+  border-color: #FF2C10;
 }
 
 .clear-selection-button:disabled {
@@ -53,7 +81,7 @@
 .category-title {
   font-size: 1.3rem;
   font-weight: 600;
-  color: #646cff;
+  color: #FF2C10;
   margin-bottom: 0.75rem;
   padding-bottom: 0.4rem;
   border-bottom: 2px solid #333;

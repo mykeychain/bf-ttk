@@ -65,7 +65,7 @@ export interface SimulateDuelArgs {
   damage_per_hit: number;
   RPM: number;
   distance: number;       // same units as target_radius
-  target_radius?: number; // effective hit radius (default: 0.20m)
+  target_radius?: number; // effective hit radius (default: 0.17m)
   precision_raw: number;  // (default range 20..76, higher is better)
   control_raw: number;    // (default range 8..65, higher is better)
   sigma_player_deg?: number; // player skill jitter (default: 0.2 degrees)
@@ -107,37 +107,42 @@ const normalize = (value: number, vmin: number, vmax: number) => {
 const deg2rad = (deg: number) => (deg * Math.PI) / 180;
 
 // ---------- game-stat → model mappings (tune these ranges if needed) ----------
-export function map_precision_to_sigma0(
+// Base weapon spread (constant, representing minimal inherent inaccuracy)
+const SIGMA0_DEG = 0.06; // degrees
+const SIGMA0 = deg2rad(SIGMA0_DEG); // radians
+
+export function map_precision_to_bloom(
   precision_raw: number,
   precision_min = 20.0,
   precision_max = 76.0,
-  sigma_min_deg = 0.06, // tighter base spread (best Precision)
-  sigma_max_deg = 0.3  // looser base spread (worst Precision)
+  k_bloom_min_deg_per_shot = 0.12, // best precision (tightest spread)
+  k_bloom_max_deg_per_shot = 0.15  // worst precision (loosest spread)
 ): number {
-  // output: radians
+  // output: radians/shot
   const pNorm = normalize(precision_raw, precision_min, precision_max); // 0..1, higher is better
-  const sigma0_deg = sigma_min_deg + (1 - pNorm) * (sigma_max_deg - sigma_min_deg);
-  return deg2rad(sigma0_deg);
+  const kBloomDeg =
+    k_bloom_min_deg_per_shot + (1 - pNorm) * (k_bloom_max_deg_per_shot - k_bloom_min_deg_per_shot);
+  return deg2rad(kBloomDeg);
 }
 
-export function map_control_to_bloom_and_drift(
+export function map_control_to_drift(
   control_raw: number,
   control_min = 8.0,
   control_max = 65.0,
-  // per-shot bloom growth (deg/shot)
-  k_bloom_min_deg_per_shot = 0.01,
-  k_bloom_max_deg_per_shot = 0.04,
   // deterministic recoil drift step magnitude (deg/shot)
-  k_drift_min_deg_per_shot = 0.03,
-  k_drift_max_deg_per_shot = 0.12
-): [number, number] {
-  // outputs: radians/shot
+  k_drift_min_deg_per_shot = 0.05, // best control (minimal drift)
+  k_drift_max_deg_per_shot = 0.16  // worst control (maximal drift)
+): number {
+  // output: radians/shot
   const cNorm = normalize(control_raw, control_min, control_max); // 0..1, higher is better
-  const kBloomDeg =
-    k_bloom_min_deg_per_shot + (1 - cNorm) * (k_bloom_max_deg_per_shot - k_bloom_min_deg_per_shot);
   const kDriftDeg =
     k_drift_min_deg_per_shot + (1 - cNorm) * (k_drift_max_deg_per_shot - k_drift_min_deg_per_shot);
-  return [deg2rad(kBloomDeg), deg2rad(kDriftDeg)];
+  return deg2rad(kDriftDeg);
+}
+
+export function controlNorm(control_raw: number, lo=8, hi=65): number {
+    const x = (control_raw - lo) / (hi - lo);
+    return Math.max(0, Math.min(1, x));
 }
 
 // ---------- player compensation (derived from single skill slider) ----------
@@ -145,7 +150,7 @@ export function alpha_from_skill(sigma_player_deg: number): number {
   // Map player jitter to compensation fraction α∈[0,0.9].
   // Smaller jitter -> higher compensation.
   const alpha = 1.0 - (sigma_player_deg / 0.30) ** 2; // 0.30° is a soft scaling reference
-  return clamp(alpha, 0.0, 0.9);
+  return clamp(alpha, 0.0, 0.98);
 }
 
 // ---------- recoil pattern (replace with real pattern if you have it) ----------
@@ -161,40 +166,72 @@ export function recoil_step_vector(
 
 // ---------- total spread (variance) ----------
 export function sigma_total_for_shot(
-  n: number,
   sigma0: number,
   k_bloom: number,
   sigma_player: number
 ): number {
-  // Angular std dev for shot n (radians).
+  // Angular std dev (radians).
   // Bloom is per-shot constant (not cumulative). Recoil drift (mu) handles pattern growth.
-  return Math.sqrt(sigma0 ** 2 + k_bloom ** 2);
+  // Total variance combines: base spread + bloom + player jitter
+  return Math.sqrt(sigma0 ** 2 + k_bloom ** 2 + sigma_player ** 2);
 }
 
-// ---------- drift update (NO recovery in minimal mode) ----------
-export function update_mu_no_recovery(
-  mu_prev: Vec2,
-  u_step: Vec2,
-  alpha: number
-): Vec2 {
-  // mu_{n+1} = mu_n + (1 - alpha) * u_{n+1}
-  return [mu_prev[0] + (1 - alpha) * u_step[0], mu_prev[1] + (1 - alpha) * u_step[1]];
-}
-
+// ---------- drift update ----------
 function update_mu_with_feedback(
     mu: Vec2,
     u: Vec2,
     alpha: number,
-    dt: number,
-    rng: RNG
+    dt: number
 ): Vec2 {
-  const kappa = 10;                      // 1/s, tune 6–16
+  const kappa = 4;                      // 1/s, tune 6–16
   const keep  = Math.exp(-kappa * dt);   // decay toward 0
-  const nx = deg2rad(0.0015) * rng.gauss(); // tiny process noise (optional)
-  const ny = deg2rad(0.0015) * rng.gauss();
-  return [mu[0]*keep + (1-alpha)*u[0] + nx,
-          mu[1]*keep + (1-alpha)*u[1] + ny];
+  return [mu[0]*keep + (1-alpha)*u[0],
+          mu[1]*keep + (1-alpha)*u[1]];
 }
+
+// --- skill & distance aware drift cap (radians) ---
+function drift_cap_for_skill_and_control(
+  alpha: number,      // 0..~0.999 (higher = better)
+  cNorm: number,
+  R_over_d: number    // target_radius / distance (radians approx for small angles)
+): number {
+  const mix = 0.5 * alpha + 0.5 * cNorm;
+
+  // Absolute cap (deg) so there's always *some* limit even at very small targets/far range
+  const Mabs_min_deg = 0.03; // best player can't drift past ~0.03°
+  const Mabs_max_deg = 0.25; // worst player can drift up to ~0.25°
+  const Mabs_deg = Mabs_max_deg - mix * (Mabs_max_deg - Mabs_min_deg);
+
+  // Relative cap as a multiple of the target's angular radius.
+  // Better player keeps mean drift within a smaller multiple of the target.
+  const k_rel_best = 0.9;   // ~60% of target radius for top players
+  const k_rel_worst = 1.6;  // up to 160% for low-skill
+  const k_rel = k_rel_worst - mix * (k_rel_worst - k_rel_best);
+
+  // Final cap is the larger of absolute floor and relative-to-target cap.
+  const M_rel_rad = k_rel * R_over_d;
+  const M_abs_rad = deg2rad(Mabs_deg);
+  return Math.max(M_abs_rad, M_rel_rad);
+}
+
+// --- draw stochastic drift cap (radians) ---
+function draw_stochastic_cap(meanM: number, cNorm: number, rng: RNG): number {
+  // Relative stddev for the cap shrinks with control (0.20→0.05).
+  const relSigma = 0.20 - 0.15 * cNorm;
+  // Lognormal-ish multiplicative noise; clamp tails for stability.
+  const z = rng.gauss();                          // N(0,1)
+  const mult = Math.exp(relSigma * z);
+  return meanM * clamp(mult, 0.7, 1.5);
+}
+
+// --- apply geometric clamp to mu, preserving direction ---
+function clampMuToRadius(mu: Vec2, M: number): Vec2 {
+  const m = Math.hypot(mu[0], mu[1]);
+  if (m <= M) return mu;
+  const s = M / (m + 1e-12);
+  return [mu[0] * s, mu[1] * s];
+}
+
 
 // ---------- per-shot hit probability (MC approx to non-central case) ----------
 export function per_shot_hit_probability(
@@ -223,7 +260,7 @@ export function simulate_duel_minimal(args: SimulateDuelArgs): DuelResult | unde
     damage_per_hit,
     RPM,
     distance,
-    target_radius = 0.25,
+    target_radius = 0.17,
     precision_raw,
     control_raw,
     sigma_player_deg = 0.1,
@@ -238,17 +275,19 @@ export function simulate_duel_minimal(args: SimulateDuelArgs): DuelResult | unde
   const R_over_d = target_radius / Math.max(1e-9, distance);
 
   // map stats
-  const sigma0 = map_precision_to_sigma0(precision_raw);
-  const [k_bloom, k_drift] = map_control_to_bloom_and_drift(control_raw);
+  const sigma0 = SIGMA0; // constant base spread
+  const k_bloom = map_precision_to_bloom(precision_raw);
+  const k_drift = map_control_to_drift(control_raw);
   const sigma_player = deg2rad(sigma_player_deg);
   const alpha = alpha_from_skill(sigma_player_deg);
+  const cNorm = controlNorm(control_raw);
 
   let mu: Vec2 = [0.0, 0.0]; // mean drift (radians)
   let hits = 0;
 
   for (let n = 1; n <= max_shots; n++) {
     // total spread for this shot
-    const sigma_n = sigma_total_for_shot(n, sigma0, k_bloom, sigma_player);
+    const sigma_n = sigma_total_for_shot(sigma0, k_bloom, sigma_player);
 
     // per-shot hit probability at this distance (with current mu)
     const p_n = per_shot_hit_probability(mu, sigma_n, R_over_d, p_samples, rng);
@@ -268,8 +307,12 @@ export function simulate_duel_minimal(args: SimulateDuelArgs): DuelResult | unde
 
     // apply recoil drift for next shot (no recovery)
     const u_step = recoil_step_vector(n, k_drift, rng);
-    // mu = update_mu_no_recovery(mu, u_step, alpha);
-    mu = update_mu_with_feedback(mu, u_step, alpha, dt, rng);
+    mu = update_mu_with_feedback(mu, u_step, alpha, dt);
+
+    // stochastic drift cap: draw per-shot, varies with control quality
+    const meanM = drift_cap_for_skill_and_control(alpha, cNorm, R_over_d);
+    const M = draw_stochastic_cap(meanM, cNorm, rng);
+    mu = clampMuToRadius(mu, M);
   }
   return undefined; // no kill within max_shots
 }

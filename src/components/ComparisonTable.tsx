@@ -9,6 +9,7 @@ interface ComparisonTableProps {
 interface WeaponMetrics {
   weaponName: string;
   valuesByDistance: Map<number, number>;
+  accuracyByDistance: Map<number, number>;
 }
 
 export function ComparisonTable({ weaponResults, metric }: ComparisonTableProps) {
@@ -24,14 +25,17 @@ export function ComparisonTable({ weaponResults, metric }: ComparisonTableProps)
   // Extract the specific metric from pre-calculated results
   const weaponMetrics: WeaponMetrics[] = weaponResults.map(({ weapon, resultsByDistance }) => {
     const valuesByDistance = new Map<number, number>();
+    const accuracyByDistance = new Map<number, number>();
 
     resultsByDistance.forEach((results, distance) => {
       valuesByDistance.set(distance, results[metric]);
+      accuracyByDistance.set(distance, results.accuracy);
     });
 
     return {
       weaponName: weapon.name,
       valuesByDistance,
+      accuracyByDistance,
     };
   });
 
@@ -41,7 +45,9 @@ export function ComparisonTable({ weaponResults, metric }: ComparisonTableProps)
 
   return (
     <div className="comparison-table-container">
-      <h2 className="comparison-title">{metric} COMPARISON</h2>
+      <h2 className="comparison-title">
+        {metric === 'ETTK' ? 'ETTK COMPARISON WITH ACCURACY' : `${metric} COMPARISON`}
+      </h2>
       <div className="comparison-table-wrapper">
         <table className="comparison-table">
           <thead>
@@ -53,14 +59,19 @@ export function ComparisonTable({ weaponResults, metric }: ComparisonTableProps)
             </tr>
           </thead>
           <tbody>
-            {weaponMetrics.map(({ weaponName, valuesByDistance }) => (
+            {weaponMetrics.map(({ weaponName, valuesByDistance, accuracyByDistance }) => (
               <tr key={weaponName}>
                 <td className="weapon-name-cell">{weaponName}</td>
                 {allDistances.map(distance => {
                   const value = valuesByDistance.get(distance);
+                  const accuracy = accuracyByDistance.get(distance);
                   return (
                     <td key={distance}>
-                      {value !== undefined ? `${value.toFixed(3)}s` : '—'}
+                      {value !== undefined
+                        ? metric === 'ETTK' && accuracy !== undefined
+                          ? `${value.toFixed(3)}s (${(accuracy * 100).toFixed(1)}%)`
+                          : `${value.toFixed(3)}s`
+                        : '—'}
                     </td>
                   );
                 })}

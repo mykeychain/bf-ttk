@@ -7,30 +7,23 @@
 
 .tab-selector {
   display: flex;
-  gap: 0;
-  background-color: #1a1a1a;
-  border-bottom: 2px solid #333;
+  gap: 1rem;
   padding: 0;
 }
 
 .tab-button {
   flex: 1;
   padding: 1rem 1.5rem;
-  background-color: #1a1a1a;
+  background-color: #242424;
   color: #888;
-  border: none;
+  border-bottom: 3px solid #333;
   border-radius: 0;
-  border-right: 1px solid #333;
   font-family: 'Rajdhani', sans-serif;
   font-size: 1.1rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.tab-button:last-child {
-  border-right: none;
+  transition: background-color 0.2s, color 0.2s, border 0.2s;
 }
 
 .tab-button:hover {
@@ -39,9 +32,9 @@
 }
 
 .tab-button.active {
-  background-color: #242424;
-  color: #646cff;
-  border-bottom: 3px solid #646cff;
+  background-color: #aaa;
+  color: #2d2d2d;
+  border-bottom: 5px solid #fff;
   margin-bottom: -2px;
 }
 
@@ -61,6 +54,16 @@
 .profile-view.active {
   display: flex;
   flex-direction: column;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #888;
+  font-size: 1.3rem;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
