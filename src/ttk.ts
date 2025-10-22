@@ -108,15 +108,15 @@ const deg2rad = (deg: number) => (deg * Math.PI) / 180;
 
 // ---------- game-stat → model mappings (tune these ranges if needed) ----------
 // Base weapon spread (constant, representing minimal inherent inaccuracy)
-const SIGMA0_DEG = 0.06; // degrees
+const SIGMA0_DEG = 0.04; // degrees
 const SIGMA0 = deg2rad(SIGMA0_DEG); // radians
 
 export function map_precision_to_bloom(
   precision_raw: number,
   precision_min = 20.0,
   precision_max = 76.0,
-  k_bloom_min_deg_per_shot = 0.12, // best precision (tightest spread)
-  k_bloom_max_deg_per_shot = 0.15  // worst precision (loosest spread)
+  k_bloom_min_deg_per_shot = 0.06, // best precision (tightest spread)
+  k_bloom_max_deg_per_shot = 0.20  // worst precision (loosest spread)
 ): number {
   // output: radians/shot
   const pNorm = normalize(precision_raw, precision_min, precision_max); // 0..1, higher is better
