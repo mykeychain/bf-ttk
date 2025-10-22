@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { WeaponCard } from './WeaponCard';
 import { SkillSlider } from './SkillSlider';
 import type { WeaponWithName } from '../types';
@@ -14,6 +15,8 @@ interface WeaponSelectorProps {
 }
 
 export function WeaponSelector({ weapons, selectedWeapons, onSelectWeapon, onClearSelection, playerSkill, onSkillChange, onOpenHelp }: WeaponSelectorProps) {
+  // Track collapsed state for each category (false = expanded, true = collapsed)
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
 
   // Group weapons by category
   const weaponsByCategory = weapons.reduce((acc, weapon) => {
@@ -26,6 +29,14 @@ export function WeaponSelector({ weapons, selectedWeapons, onSelectWeapon, onCle
 
   // Define category order
   const categoryOrder = ['assault rifle', 'carbine', 'smg', 'lmg', 'dmr'];
+
+  // Toggle category collapsed state
+  const toggleCategory = (category: string) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
 
   return (
     <div className="weapon-selector">
@@ -53,20 +64,33 @@ export function WeaponSelector({ weapons, selectedWeapons, onSelectWeapon, onCle
         const categoryWeapons = weaponsByCategory[category];
         if (!categoryWeapons || categoryWeapons.length === 0) return null;
 
+        const isCollapsed = collapsedCategories[category] || false;
+
         return (
           <div key={category} className="weapon-category">
-            <h2 className="category-title">
-              {category.toUpperCase()}
-            </h2>
-            <div className="weapon-grid">
-              {categoryWeapons.map((weapon) => (
-                <WeaponCard
-                  key={weapon.name}
-                  name={weapon.name}
-                  selected={selectedWeapons.includes(weapon.name)}
-                  onClick={() => onSelectWeapon(weapon.name)}
-                />
-              ))}
+            <div className="category-header-row">
+              <h2 className="category-title">
+                {category.toUpperCase()}
+              </h2>
+              <button
+                className="category-toggle-button"
+                onClick={() => toggleCategory(category)}
+                aria-label={isCollapsed ? 'Expand category' : 'Collapse category'}
+              >
+                {isCollapsed ? '+' : '−'}
+              </button>
+            </div>
+            <div className={`weapon-grid-wrapper ${isCollapsed ? 'weapon-grid-collapsed' : 'weapon-grid-expanded'}`}>
+              <div className="weapon-grid">
+                {categoryWeapons.map((weapon) => (
+                  <WeaponCard
+                    key={weapon.name}
+                    name={weapon.name}
+                    selected={selectedWeapons.includes(weapon.name)}
+                    onClick={() => onSelectWeapon(weapon.name)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         );

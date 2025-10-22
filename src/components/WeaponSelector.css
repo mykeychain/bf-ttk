@@ -48,7 +48,7 @@
 .clear-selection-button {
   width: 100%;
   padding: 0.75rem 1rem;
-  margin: 0;
+  margin: 0 0 2rem 0;
   background-color: #2a2a2a;
   color: #FF2C10;
   border: 2px solid #444;
@@ -75,17 +75,62 @@
 }
 
 .weapon-category {
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.category-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #333;
 }
 
 .category-title {
   font-size: 1.3rem;
   font-weight: 600;
   color: #FF2C10;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 2px solid #333;
+  margin: 0;
+  padding: 0;
+  border: none;
   letter-spacing: 0.05em;
+}
+
+.category-toggle-button {
+  width: 24px;
+  height: 24px;
+  background-color: transparent;
+  border: 2px solid #444;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.category-toggle-button:hover {
+  border-color: #FF2C10;
+  color: #FF2C10;
+  background-color: rgba(255, 44, 16, 0.1);
+}
+
+.weapon-grid-wrapper {
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.weapon-grid-expanded {
+  max-height: 1000px;
+}
+
+.weapon-grid-collapsed {
+  max-height: 0;
 }
 
 .weapon-grid {
