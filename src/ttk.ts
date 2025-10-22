@@ -116,7 +116,7 @@ export function map_precision_to_bloom(
   precision_min = 20.0,
   precision_max = 76.0,
   k_bloom_min_deg_per_shot = 0.06, // best precision (tightest spread)
-  k_bloom_max_deg_per_shot = 0.20  // worst precision (loosest spread)
+  k_bloom_max_deg_per_shot = 0.18  // worst precision (loosest spread)
 ): number {
   // output: radians/shot
   const pNorm = normalize(precision_raw, precision_min, precision_max); // 0..1, higher is better
@@ -150,7 +150,7 @@ export function alpha_from_skill(sigma_player_deg: number): number {
   // Map player jitter to compensation fraction α∈[0,0.9].
   // Smaller jitter -> higher compensation.
   const alpha = 1.0 - (sigma_player_deg / 0.30) ** 2; // 0.30° is a soft scaling reference
-  return clamp(alpha, 0.0, 0.98);
+  return clamp(alpha, 0.0, 0.89);
 }
 
 // ---------- recoil pattern (replace with real pattern if you have it) ----------
@@ -183,7 +183,7 @@ function update_mu_with_feedback(
     alpha: number,
     dt: number
 ): Vec2 {
-  const kappa = 4;                      // 1/s, tune 6–16
+  const kappa = 1.5;                      // 1/s, tune 6–16
   const keep  = Math.exp(-kappa * dt);   // decay toward 0
   return [mu[0]*keep + (1-alpha)*u[0],
           mu[1]*keep + (1-alpha)*u[1]];
